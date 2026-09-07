@@ -1,0 +1,20 @@
+# Cache local de providers/módulos e lock de estado — nunca deve ser versionado
+.terraform/
+.terraform.lock.hcl
+
+# State é remoto (backend S3); nada de state local no git
+*.tfstate
+*.tfstate.*
+errored.tfstate
+
+# Planos salvos e logs gerados durante os apply manuais
+tfplan
+*.tfplan
+*plan*.log
+*apply*.log
+crash.log
+crash.*.log
+
+# Pode conter valores sensíveis específicos do seu ambiente
+terraform.tfvars
+*.auto.tfvars
