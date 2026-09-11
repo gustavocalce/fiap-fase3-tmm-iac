@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: targeting-service
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/gustavocalce/fiap-fase3-tmm-iac.git
+    targetRevision: main
+    path: gitops/apps/targeting-service
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: targeting-service
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

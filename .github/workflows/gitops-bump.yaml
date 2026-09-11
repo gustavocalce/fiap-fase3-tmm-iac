@@ -1,0 +1,53 @@
+name: gitops-bump
+
+# Workflow reutilizável: o pipeline de cada serviço chama este job depois de
+# publicar a imagem no ECR. Ele reescreve o newTag do kustomization.yaml do
+# serviço em gitops/apps/<service>/ e faz commit/push. O ArgoCD detecta o
+# commit e sincroniza o cluster (fonte da verdade = Git).
+on:
+  workflow_call:
+    inputs:
+      service:
+        description: "Nome do serviço (pasta em gitops/apps/<service>)"
+        required: true
+        type: string
+      image_tag:
+        description: "Tag da imagem publicada no ECR (usar o SHA do commit; ECR é IMMUTABLE)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kustomize
+        run: |
+          curl -sSL "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Bump image tag
+        working-directory: gitops/apps/${{ inputs.service }}
+        run: |
+          set -euo pipefail
+          # Descobre o nome-base da imagem (linha 'name:' do bloco images:)
+          BASE="$(grep -A2 '^images:' kustomization.yaml | grep 'name:' | head -1 | sed 's/.*name:[[:space:]]*//')"
+          echo "Base image: $BASE -> tag ${{ inputs.image_tag }}"
+          kustomize edit set image "${BASE}:${{ inputs.image_tag }}"
+
+      - name: Commit and push
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add gitops/apps/${{ inputs.service }}/kustomization.yaml
+          if git diff --cached --quiet; then
+            echo "Nada mudou (tag já era ${{ inputs.image_tag }})."
+            exit 0
+          fi
+          git commit -m "deploy ${{ inputs.service }} ${{ inputs.image_tag }}"
+          git push
