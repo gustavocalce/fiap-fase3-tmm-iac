@@ -136,12 +136,22 @@ module "k8s_addons" {
   # o for_each do aws_provider_installer no plan.
 }
 
-module "k8s_manifests" {
-  source = "./modules/k8s-manifests"
-
-  k8s_path       = local.k8s_path
-  account_id     = data.aws_caller_identity.current.account_id
-  old_account_id = local.old_account_id
-
-  depends_on = [module.k8s_addons, module.irsa, module.secrets]
-}
+# DESLIGADO: os 5 workloads passaram a ser gerenciados pelo ArgoCD (GitOps),
+# em gitops/. Manter este módulo ligado faria o Terraform e o ArgoCD brigarem
+# pela posse dos Deployments (cada apply/sync desfazendo o outro).
+#
+# ATENCAO (quem tem acesso ao backend S3): se a infra ja foi aplicada com este
+# modulo, os manifests estao no state. Remova-os SEM destruir os workloads que
+# o ArgoCD agora possui:
+#
+#   cd terraform && terraform state rm 'module.k8s_manifests'
+#
+# module "k8s_manifests" {
+#   source = "./modules/k8s-manifests"
+#
+#   k8s_path       = local.k8s_path
+#   account_id     = data.aws_caller_identity.current.account_id
+#   old_account_id = local.old_account_id
+#
+#   depends_on = [module.k8s_addons, module.irsa, module.secrets]
+# }
