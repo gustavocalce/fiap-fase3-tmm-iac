@@ -19,32 +19,39 @@ gitops/
 
 Os manifests foram copiados verbatim da pasta `K8s/` e ainda carregam o account
 ID antigo `570814275471` (role-arn das ServiceAccounts, URI do ECR nas imagens e
-URLs de SQS). Antes do bootstrap, faça **um único find-replace** na pasta:
+URLs de SQS). Antes do bootstrap, rode o script (pegue o account real com a
+pessoa do IaC):
 
 ```bash
-# pegue o account real com a pessoa do IaC (var.account_id / aws sts get-caller-identity)
-grep -rl 570814275471 gitops/ | xargs sed -i 's/570814275471/<ACCOUNT_REAL>/g'
+bash gitops/set-account.sh 123456789012   # informando o account
+bash gitops/set-account.sh                 # ou autodetecta via AWS CLI
 ```
 
-Isso corrige tudo de uma vez: annotations das SAs, `newName` implícito das
-imagens e as URLs de SQS. O tag da imagem é gerenciado à parte (bloco `images:`).
+Isso corrige tudo de uma vez: annotations das SAs, URI das imagens e as URLs de
+SQS. O tag da imagem continua sendo gerenciado à parte (bloco `images:`).
 
 ## Bootstrap do ArgoCD
 
+Com o kubeconfig apontando pro cluster certo (confira `kubectl config
+current-context`), rode o script versionado — ele instala o ArgoCD via Helm
+(versão pinada) e aplica a root-app:
+
 ```bash
-helm repo add argo https://argoproj.github.io/argo-helm
-helm install argocd argo/argo-cd -n argocd --create-namespace --version 7.7.x
+bash gitops/install-argocd.sh
+```
 
-# aplica só a root — ela cria as 5 Applications filhas:
+Ele imprime a senha do admin e o comando de port-forward ao final. Manualmente,
+o equivalente é:
+
+```bash
+helm install argocd argo/argo-cd -n argocd --create-namespace --version 7.7.11
 kubectl apply -f gitops/bootstrap/root-app.yaml
-
-# senha inicial do admin:
 kubectl -n argocd get secret argocd-initial-admin-secret \
   -o jsonpath="{.data.password}" | base64 -d
-
-# UI:
 kubectl -n argocd port-forward svc/argocd-server 8080:443   # https://localhost:8080
 ```
+
+Para testar sem AWS (cluster kind local), use `bash gitops/test-local.sh`.
 
 ## Validar localmente antes de commitar
 
