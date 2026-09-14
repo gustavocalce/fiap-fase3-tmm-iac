@@ -9,4 +9,4 @@ resources:
 - ingress.yaml
 images:
 - name: 640494160208.dkr.ecr.us-east-2.amazonaws.com/fiap-fase2/flag-service
-  newTag: 78c23e9
+  newTag: final-demo
