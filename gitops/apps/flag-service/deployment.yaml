@@ -19,7 +19,7 @@ spec:
       serviceAccountName: flag-service
       containers:
       - name: flag-service
-        image: 570814275471.dkr.ecr.us-east-2.amazonaws.com/fiap-fase2/flag-service:1.0.1
+        image: 640494160208.dkr.ecr.us-east-2.amazonaws.com/fiap-fase2/flag-service:1.0.1
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8002

@@ -8,5 +8,5 @@ resources:
   - deployment.yaml
   - ingress.yaml
 images:
-  - name: 570814275471.dkr.ecr.us-east-2.amazonaws.com/fiap-fase2/evaluation-service
+  - name: 640494160208.dkr.ecr.us-east-2.amazonaws.com/fiap-fase2/evaluation-service
     newTag: "1.0.0"

@@ -17,18 +17,19 @@ gitops/
 
 ## Pré-requisito: substituir o Account ID
 
-Os manifests foram copiados verbatim da pasta `K8s/` e ainda carregam o account
-ID antigo `570814275471` (role-arn das ServiceAccounts, URI do ECR nas imagens e
-URLs de SQS). Antes do bootstrap, rode o script (pegue o account real com a
-pessoa do IaC):
+Os manifests foram copiados verbatim da pasta `K8s/` e originalmente carregavam
+o account ID antigo `570814275471` (role-arn das ServiceAccounts, URI do ECR nas
+imagens e URLs de SQS). Isso já foi corrigido nesta pasta para o account real da
+Fase 3 (`640494160208`) via:
 
 ```bash
-bash gitops/set-account.sh 123456789012   # informando o account
+bash gitops/set-account.sh 640494160208    # informando o account
 bash gitops/set-account.sh                 # ou autodetecta via AWS CLI
 ```
 
 Isso corrige tudo de uma vez: annotations das SAs, URI das imagens e as URLs de
-SQS. O tag da imagem continua sendo gerenciado à parte (bloco `images:`).
+SQS. O tag da imagem continua sendo gerenciado à parte (bloco `images:`). Rode o
+script de novo apenas se o account mudar (ex.: novo ambiente AWS).
 
 ## Bootstrap do ArgoCD
 
